@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Decision-Support Ranker for Content Refresh Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAFA;
+    --ink:#1B2430;
+    --ink-soft:#4A5568;
+    --teal:#2B6777;
+    --clay:#B23A48;
+    --rule:#DADAD2;
+    --box:#F1F1EC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Source Serif 4", Georgia, serif;
+    font-size:18px;
+    line-height:1.65;
+  }
+  .wrap{
+    max-width:740px;
+    margin:0 auto;
+    padding:64px 24px 96px;
+  }
+  h1,h2,h3,.mono,.byline,.caption,.eyebrow-free,nav,table,code,pre{
+    font-family:"Space Grotesk", sans-serif;
+  }
+  code, pre, .datatag{
+    font-family:"JetBrains Mono", monospace;
+  }
+  h1{
+    font-size:2rem;
+    line-height:1.25;
+    margin:0 0 10px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .byline{
+    font-size:0.95rem;
+    color:var(--ink-soft);
+    margin:0 0 40px;
+    font-weight:500;
+  }
+  .abstract{
+    border-left:3px solid var(--teal);
+    background:var(--box);
+    padding:20px 24px;
+    margin:0 0 52px;
+    font-size:1rem;
+  }
+  .abstract p{margin:0;}
+  .abstract .label{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--teal);
+    display:block;
+    margin-bottom:10px;
+  }
+  section{
+    margin-bottom:52px;
+  }
+  h2{
+    font-size:1.3rem;
+    font-weight:700;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:10px;
+    margin:0 0 22px;
+  }
+  h2 .num{color:var(--teal); margin-right:8px;}
+  h3{
+    font-size:1.02rem;
+    font-weight:600;
+    margin:28px 0 10px;
+    color:var(--ink);
+  }
+  h3 .num{color:var(--teal); margin-right:6px;}
+  p{margin:0 0 16px;}
+  .claims{
+    list-style:none;
+    margin:0 0 8px;
+    padding:0;
+  }
+  .claims li{
+    margin:0 0 18px;
+    padding:14px 18px;
+    background:var(--box);
+    border-radius:2px;
+    font-size:0.98rem;
+  }
+  .claims .tag{
+    font-family:"JetBrains Mono", monospace;
+    font-weight:600;
+    color:var(--teal);
+    margin-right:8px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:18px 0 8px;
+    font-size:0.95rem;
+  }
+  caption{
+    text-align:left;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    font-weight:500;
+  }
+  th,td{
+    text-align:left;
+    padding:9px 14px 9px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  th{
+    font-weight:600;
+    border-bottom:2px solid var(--ink);
+    color:var(--ink);
+  }
+  td.num, th.num{
+    font-family:"JetBrains Mono", monospace;
+    text-align:right;
+    padding-right:24px;
+  }
+  th.num{text-align:right; padding-right:24px;}
+  .model-row td{font-weight:600; color:var(--teal);}
+  figure{
+    margin:24px 0 8px;
+    padding:0;
+  }
+  figure img{
+    width:100%;
+    height:auto;
+    display:block;
+    border:1px solid var(--rule);
+  }
+  figcaption{
+    font-size:0.9rem;
+    color:var(--ink-soft);
+    margin-top:10px;
+    line-height:1.5;
+  }
+  figcaption .fig-num{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .never-list{
+    margin:10px 0 0;
+    padding-left:20px;
+  }
+  .never-list li{margin-bottom:6px;}
+  pre{
+    background:var(--box);
+    padding:16px 18px;
+    border-radius:2px;
+    font-size:0.88rem;
+    overflow-x:auto;
+    line-height:1.6;
+    margin:14px 0;
+  }
+  code{
+    font-size:0.9em;
+    background:var(--box);
+    padding:1px 5px;
+    border-radius:2px;
+  }
+  pre code{
+    background:none;
+    padding:0;
+  }
+  a{color:var(--teal);}
+  a:hover{color:var(--clay);}
+  .ack{
+    font-size:0.98rem;
+    color:var(--ink-soft);
+    border-top:1px solid var(--rule);
+    padding-top:24px;
+    margin-top:64px;
+  }
+  .ack a{font-weight:600;}
+  .repro-links{
+    margin-top:18px;
+    font-size:0.95rem;
+  }
+  @media (max-width:600px){
+    body{font-size:16.5px;}
+    .wrap{padding:40px 18px 64px;}
+    h1{font-size:1.6rem;}
+    table{font-size:0.85rem;}
+    th,td{padding:7px 8px 7px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>A Decision-Support Ranker for Content Refresh Review: Client-Grouped Evaluation Against an Audited Baseline</h1>
+  <p class="byline">Debbie Sholabi &nbsp;·&nbsp; FlyRank ML Internship — Lane 2, Refresh &amp; Content Opportunity Scoring &nbsp;·&nbsp; September 2026</p>
+
+  <div class="abstract">
+    <span class="label">Abstract</span>
+    <p>A central content team can only review a limited number of pages each week, so the decision this system supports — and the metric fixed before training — is the order of that review: Precision@50. The evaluation covers 30,000 pseudonymized content pages across 32 clients, split by client rather than by row, so no client's pages appear on both sides of training and testing. An audited two-signal rule (staleness and search-position slippage) is compared against a logistic regression model trained on eight features spanning freshness, search visibility, keyword opportunity, and engagement. Under the client-grouped test split, the model reaches 0.680 Precision@50 against the rule's 0.400 — a lift that narrows at Precision@100 (0.600 vs 0.450) — while a parallel check shows a naive random-row split would have inflated the model's apparent score to 0.740, overstating it by 0.060. The output is a ranked, decision-support queue for a human reviewer, not an automated publishing decision, and every claim below is stated as observed or measured rather than causal.</p>
+  </div>
+
+  <section id="s1">
+    <h2><span class="num">1.</span>Introduction and claims</h2>
+    <p>A page that quietly loses search traffic costs a business real visitors until someone notices — but a content team reviewing a large portfolio cannot check every page every week. The practical decision is not "is this page declining?" in the abstract; it is "which fifty pages should a reviewer look at first this week?" This paper reports a decision-support ranker built for exactly that queue, evaluated the way it would actually be used: split by client rather than by row, and checked for whether the split itself was doing the work.</p>
+    <p>Three claims are made below, each traceable to a specific notebook cell in the accompanying repository (§7).</p>
+    <ul class="claims">
+      <li><span class="tag">C1</span>Under a client-grouped test split, logistic regression reaches a higher Precision@50 than an audited baseline rule (0.680 vs 0.400) — a lift that persists but narrows at Precision@100 (0.600 vs 0.450) (§4.1).</li>
+      <li><span class="tag">C2</span>The evaluation boundary changes the answer: scoring the identical model on a random row-level split instead of a client-grouped one inflates Precision@50 from 0.680 to 0.740 (§4.2).</li>
+      <li><span class="tag">C3</span>The model's single strongest feature — whether a page has any tracked search-position data at all — reflects a real behavioral pattern rather than a leakage artifact: removing it drops Precision@50 by a modest 0.040 (0.680 → 0.640), not a collapse toward chance (§4.3).</li>
+    </ul>
+  </section>
+
+  <section id="s2">
+    <h2><span class="num">2.</span>Data</h2>
+    <h3><span class="num">2.1</span>Unit and source</h3>
+    <p>One observation is one content page for one client, drawn from a single snapshot of trailing 90-day search performance. Source: the FlyRank ML Internship dataset, a pseudonymized feature extract of 30,000 content pages across 32 clients, drawn from FlyRank's broader Search Intelligence warehouse. <code>client_id</code> and <code>content_id</code> are pseudonymous hashes, used only for grouping — never as model features.</p>
+    <h3><span class="num">2.2</span>Label</h3>
+    <p><code>is_declining_label = 1</code> if <code>trend_direction == "down"</code>, else 0 — a proxy built from a trend calculation already present in the dataset, not a directly observed outcome such as lost revenue. Base rate across the full dataset: 54.2%.</p>
+    <h3><span class="num">2.3</span>Features and exclusions</h3>
+    <p>Eight engineered features span freshness (<code>days_since_last_update</code>), search visibility (<code>avg_position</code>, <code>has_position_data</code>), keyword opportunity (<code>search_volume</code>, <code>competition</code>, <code>has_keyword_data</code>), and engagement (<code>ctr</code>, <code>engagement_rate</code>). <code>trend_direction</code> and <code>trend_pct</code> — the columns the label is derived from — are excluded from the feature set entirely.</p>
+    <h3><span class="num">2.4</span>Data limits</h3>
+    <p>4.0% of pages carry no tracked visibility/position data at all; these are not scored the same way as tracked pages and are routed to manual review rather than silently deprioritized (§6.4). This is a single month's cross-section, not a matched time series — clients began tracking at different points, so history length varies by client.</p>
+  </section>
+
+  <section id="s3">
+    <h2><span class="num">3.</span>Methodology</h2>
+    <h3><span class="num">3.1</span>Baseline</h3>
+    <p>An audited two-signal rule, frozen before any model was trained: flag a page as risky if it is stale (90+ days since its last update) or slipping in search position (average position worse than 10); score = the count of triggered flags (0, 1, or 2). Transparent, but ties every page that trips both flags at the same score regardless of how stale or how far slipped.</p>
+    <h3><span class="num">3.2</span>Model</h3>
+    <p>Logistic regression over the eight features above, chosen because it weights each signal separately instead of the rule's flat +1, and lets signals combine — a page that is old and low-ranked but still shows strong engagement can be learned as comparatively stable, rather than automatically flagged. All stochastic components use a fixed seed (42).</p>
+    <h3><span class="num">3.3</span>Validation design</h3>
+    <p>Train/test split via <code>GroupShuffleSplit</code>, grouped by <code>client_id</code>, 80/20 (train: 25 clients, 23,837 rows; test: 7 clients, 6,163 rows). No client's pages appear on both sides. This matters because the deployed use case is scoring a client's pages the model may never have trained on; a row-level random split would let the model partially learn client-specific baselines rather than generalize.</p>
+    <h3><span class="num">3.4</span>Leakage checks</h3>
+    <p>Two checks were run before trusting the headline number: (i) re-scoring the identical model on an ungrouped, random row-level split, to measure how much of the apparent lift comes from client leakage rather than genuine generalization; (ii) removing <code>has_position_data</code> — the single strongest feature — and re-training, to check whether it was encoding the label rather than a real behavioral pattern. Results in §4.2–4.3.</p>
+  </section>
+
+  <section id="s4">
+    <h2><span class="num">4.</span>Results</h2>
+    <h3><span class="num">4.1</span>Main comparison</h3>
+    <p>On the client-grouped test fold (7 clients, 6,163 pages, none seen during training):</p>
+    <table>
+      <caption>Table 1. Precision at K, client-grouped test split (base rate 51.1% on this fold; 54.2% overall).</caption>
+      <thead>
+        <tr><th>Method</th><th class="num">Precision@50</th><th class="num">Precision@100</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Base rate (random selection)</td><td class="num">0.511</td><td class="num">0.511</td></tr>
+        <tr><td>Baseline rule</td><td class="num">0.400</td><td class="num">0.450</td></tr>
+        <tr class="model-row"><td>Logistic regression (proposed)</td><td class="num">0.680</td><td class="num">0.600</td></tr>
+      </tbody>
+    </table>
+    <p>At the top of the queue — the slice a reviewer actually works through — the model is a clear lift over both the rule and chance: 68% of its top 50 picks are genuinely declining pages, against 40% for the rule and 51% from picking at random. The gap narrows by Precision@100 (60% vs 45%), consistent with the model's advantage concentrating at the highest-confidence end of the ranking rather than holding uniformly across the whole queue.</p>
+    <figure>
+      <img src="model_vs_baseline.png" alt="Bar chart comparing Precision at 50 and Precision at 100 for the base rate, baseline rule, and logistic regression model.">
+      <figcaption><span class="fig-num">Figure 1.</span> Precision@50 and Precision@100 for the base rate, baseline rule, and proposed model, on the same client-grouped test fold. The model's advantage is largest at the head of the queue.</figcaption>
+    </figure>
+
+    <h3><span class="num">4.2</span>The evaluation boundary is load-bearing</h3>
+    <p>Re-scoring the identical model on a random, row-level split (instead of grouping by client) raised Precision@50 from 0.680 to 0.740 — a 0.060 optimistic bias attributable to clients appearing on both sides of that split. This is why §3.3 groups by client: the row-level number would have overstated real-world performance on a client the model has never encountered.</p>
+
+    <h3><span class="num">4.3</span>Leakage / ablation check</h3>
+    <p>Removing <code>has_position_data</code>, the model's strongest feature, drops Precision@50 from 0.680 to 0.640 — a real but modest decline (0.040), not a collapse toward the 0.511 base rate. This is consistent with the feature encoding a genuine behavioral pattern (tracked vs. untracked pages behave differently), rather than smuggling the label in indirectly; <code>trend_direction</code> and <code>trend_pct</code>, the label's actual source columns, were never included as features at any point.</p>
+
+    <h3><span class="num">4.4</span>Error pattern</h3>
+    <p>The rule's own top-20 manual review (Week 4) surfaced its failure mode directly: 9 of its top 20 picks were false alarms, because a flat rule cannot distinguish an old, low-ranked page that is still holding steady traffic from one that is actually declining — it scores both identically. The model's remaining errors concentrate in the same territory: borderline pages where engagement signals do not clearly separate the two cases. This is the expected ceiling of a linear model working from eight features, not an implementation bug.</p>
+  </section>
+
+  <section id="s5">
+    <h2><span class="num">5.</span>Limitations &amp; honest framing</h2>
+    <h3><span class="num">5.1</span>Sample and scope</h3>
+    <p>Trained and tested on one anonymized snapshot — 30,000 pages, 32 clients, trailing-90-day metrics. Not tested on a different time period, client base, or traffic profile; whether Precision@50 holds on a genuinely new client cohort or a later month is untested here.</p>
+    <h3><span class="num">5.2</span>No visibility, no verdict</h3>
+    <p>4.0% of pages carry no tracked position data and are not meaningfully scored by this model; they require manual review, not silent deprioritization (§6.4).</p>
+    <h3><span class="num">5.3</span>Model ceiling</h3>
+    <p>Eight linear features, no modeling of page-content quality, competitor behavior, or any ranking factor the model has no access to. Errors concentrate in the same borderline territory the baseline rule struggled with, just less often (§4.4).</p>
+    <h3><span class="num">5.4</span>What this cannot claim</h3>
+    <p>That any single page's decline was caused by staleness, position, or any other feature; that refreshing a flagged page is guaranteed to improve it; or anything about how a search engine's actual ranking algorithm works. Every number in this paper is observed or measured on this one snapshot and is offered as decision-support, never as proof.</p>
+  </section>
+
+  <section id="s6">
+    <h2><span class="num">6.</span>Ranked recommendations</h2>
+    <h3><span class="num">6.1</span>The playbook</h3>
+    <p>Score every page, rank by predicted decline probability, and use the top of that ranking as a reviewer's queue — the same way a triage system turns a severity score into "see a doctor now" versus "can wait."</p>
+
+    <h3><span class="num">6.2</span>A finding that reshapes the playbook</h3>
+    <p>Checking which rule-based archetype dominates the model's actual top-ranked queue turned up a genuine surprise: at every K tested (top 50, 100, 200), 100% of the model's highest-risk picks are pages that are stale but <em>not</em> yet slipping in position — the archetype the baseline rule scores lowest of its three "risky" categories (1 flag of 2). This tracks the underlying data: stale-only pages have the highest raw decline rate of any archetype (62.1%), narrowly ahead of stale-and-slipping (60.0%) and clearly ahead of slipping-only (54.7%) and neither (47.8%) (Figure 2). A plausible reading: a page that is stale but still well-positioned may be running on borrowed time, while a page that has already slipped in position has, in a sense, already priced in much of its decline. This is exactly the kind of pattern a flat additive rule cannot represent, and a concrete illustration of why the model's separate feature weighting (§3.2) outperforms it.</p>
+    <figure>
+      <img src="archetype_distribution.png" alt="Horizontal bar chart of decline rate by rule-based archetype: neither, slipping only, stale and slipping, stale only.">
+      <figcaption><span class="fig-num">Figure 2.</span> Share of pages currently declining, by rule-based archetype (full dataset, n = 30,000). Stale-only pages decline at the highest rate despite being scored lowest by the baseline rule's own point system.</figcaption>
+    </figure>
+
+    <h3><span class="num">6.3</span>Before acting on any recommendation, a human reviewer must</h3>
+    <p>Read the page in its current context — does the recommendation still make sense? — confirm it is not tied to an active campaign or an already-scheduled change, and confirm the client relationship is still active and in scope.</p>
+
+    <h3><span class="num">6.4</span>Never automate</h3>
+    <ul class="never-list">
+      <li>Auto-publishing or auto-editing content directly from this queue</li>
+      <li>Auto-deleting or unpublishing a page</li>
+      <li>Using this score to evaluate an individual writer's or editor's performance</li>
+      <li>Applying the model to a client outside the 32 in this dataset without revalidating</li>
+      <li>Treating "no visibility data" pages as low priority by default — they require manual review (§2.4), not silence</li>
+    </ul>
+
+    <h3><span class="num">6.5</span>Retrain triggers</h3>
+    <p>The no-visibility rate drifting materially from ~4%, the decline-base-rate drifting materially from ~54%, or a later outcome check showing Precision@50 has dropped meaningfully below 0.680. Absent a trigger, retrain on a fixed quarterly schedule.</p>
+  </section>
+
+  <section id="s7">
+    <h2><span class="num">7.</span>Reproducibility</h2>
+    <p><strong>Environment:</strong> Python 3, pandas, scikit-learn, matplotlib · seed 42 for all stochastic components<br>
+    <strong>Data:</strong> FlyRank ML Internship dataset (<code>data/raw/content_refresh_anonymized.csv</code>)</p>
+    <pre><code>pip install -r requirements.txt
+# then open and run top to bottom:
+work/notebooks/capstone.ipynb</code></pre>
+    <table>
+      <caption>Table 2. Result-to-notebook map.</caption>
+      <thead><tr><th>Result</th><th>Regenerated by</th></tr></thead>
+      <tbody>
+        <tr><td>Table 1 — model vs. baseline</td><td><code>capstone.ipynb</code>, §3–4</td></tr>
+        <tr><td>Figure 1 — precision comparison</td><td><code>capstone.ipynb</code>, §4</td></tr>
+        <tr><td>§4.2 — random-split comparison</td><td><code>w06_validation_audit.ipynb</code>; <code>capstone.ipynb</code>, §3</td></tr>
+        <tr><td>§4.3 — leakage ablation</td><td><code>capstone.ipynb</code>, §3</td></tr>
+        <tr><td>Figure 2 — decline rate by archetype</td><td><code>capstone.ipynb</code>, §7</td></tr>
+        <tr><td>Ranked queue</td><td><code>capstone.ipynb</code>, §6</td></tr>
+      </tbody>
+    </table>
+    <p class="repro-links">Full source and notebooks: <a href="https://github.com/Debbie1236-cmd/flyrank-ml-internship" target="_blank" rel="noopener">github.com/Debbie1236-cmd/flyrank-ml-internship</a>. This page is generated from the notebook's own outputs and can be regenerated from a clean clone.</p>
+  </section>
+
+  <div class="ack">
+    <p>Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>. Data credit is provided per internship guidelines and does not substitute for independent verification of any claim above.</p>
+  </div>
+
+</div>
+</body>
+</html>
