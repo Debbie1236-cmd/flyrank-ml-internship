@@ -1,4 +1,5 @@
-# FlyRank ML Internship — Starter Repo
+ ## 📌 Start Here — Capstone - **Deployed paper:**(https://debbie1236-cmd.github.io/flyrank-ml-internship/) - **Capstone notebook:** `(https://github.com/Debbie1236-cmd/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb) - **Paper URL file:** (https://github.com/Debbie1236-cmd/flyrank-ml-internship/blob/main/submission/paper_url.txt)
+ # FlyRank ML Internship — Starter Repo
 
 **Applied Search Intelligence: Google Search Ranking & Discoverability**
 
